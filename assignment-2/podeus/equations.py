@@ -47,7 +47,7 @@ def _dpeth_dt(k_peth, blood_conc, k_peth_out, peth, k_peth_bind, peth_bound, k_p
     r_peth_release = max(0, k_peth_release * (peth_bound - peth))
     return r_peth - r_peth_bind + r_peth_release - r_peth_clear
 
-def _dpeth_bound_dt (k_peth_bind, peth_bound, k_peth_release, peth_bound, peth):
+def _dpeth_bound_dt (k_peth_bind, peth_bound, k_peth_release, peth):
     r_peth_bind = k_peth_bind * peth_bound
     r_peth_release = max(0, k_peth_release * (peth_bound - peth))
     return r_peth_bind - r_peth_release
