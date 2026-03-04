@@ -2,6 +2,8 @@ import podeus
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+
 # define drinks
 beer = podeus.Drink(volume_dl=5, kcal=120, alcohol_percentage=5, time_start_min=0, time_end_min=30)
 
