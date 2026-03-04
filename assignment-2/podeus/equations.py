@@ -35,6 +35,14 @@ def _dmass_etoh_intestine_dt(mass_etoh_intestine, conc_etoh_stomach, vol_stomach
     r4 = mass_etoh_intestine * k4
     return R_emptying*conc_etoh_stomach - r3 - r4
 
+def _dconc_blood_alcohol_dt(conc_blood, k_m_cyp2e1, k_m_adh, v_liver, v_max_adh, v_max_cyp2e1, mass_etoh_intestine, a, b, c, h, w, k3):
+    v_adh = v_max_adh * (conc_blood)/(k_m_adh + conc_blood)
+    v_cyp2e1 = v_max_cyp2e1 * (conc_blood)/(k_m_cyp2e1 + conc_blood)
+    v_blood = (a * h^3 + b * w + c) * 10 #dl 
+    r3 = mass_etoh_intestine * k3
+    r5 = v_adh + v_cyp2e1
+    return (r3/v_blood) - r5 * (v_liver/v_blood)
+
 def _dplasma_acetate_dt(v_adh, v_cyp2e1, k6, plasma_acetate):
     r5 = v_adh + v_cyp2e1
     r6 = k6 * plasma_acetate
@@ -85,7 +93,7 @@ def podeus_model(y, t, params, sex, weight, height, drinks, meals):
     # blood concentrations 
     # ------- START OF OWN IMPLEMENTATION -------
     # You can implement the remaining equations here! 
-    dblood_conc_dt = 0.0
+    dblood_conc_dt = 5
     dplasma_acetate_dt = 0.0
     dpeth_dt = 0.0
     dpeth_bound_dt = 0.0
