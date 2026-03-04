@@ -33,33 +33,7 @@ def _dmass_etoh_intestine_dt(mass_etoh_intestine, conc_etoh_stomach, vol_stomach
     R_emptying = vmax * ( (vol_stomach-vss)/((vol_stomach-vss) + km) ) * np.exp( -kcal_liquid/k_kcal )
     r3 = mass_etoh_intestine * k3
     r4 = mass_etoh_intestine * k4
-    return R_emptying*conc_etoh_stomach - r3 - r4
-
-def _dconc_blood_alcohol_dt(conc_blood, k_m_cyp2e1, k_m_adh, v_liver, v_max_adh, v_max_cyp2e1, mass_etoh_intestine, a, b, c, h, w, k3):
-    v_adh = v_max_adh * (conc_blood)/(k_m_adh + conc_blood)
-    v_cyp2e1 = v_max_cyp2e1 * (conc_blood)/(k_m_cyp2e1 + conc_blood)
-    v_blood = (a * h^3 + b * w + c) * 10 #dl 
-    r3 = mass_etoh_intestine * k3
-    r5 = v_adh + v_cyp2e1
-    return (r3/v_blood) - r5 * (v_liver/v_blood)
-
-def _dplasma_acetate_dt(v_adh, v_cyp2e1, k6, plasma_acetate):
-    r5 = v_adh + v_cyp2e1
-    r6 = k6 * plasma_acetate
-    return r5 - r6
-
-def _dpeth_dt(k_peth, blood_conc, k_peth_out, peth, k_peth_bind, peth_bound, k_peth_release):
-    r_peth = k_peth * blood_conc
-    r_peth_clear = k_peth_out * peth
-    r_peth_bind = k_peth_bind * peth_bound
-    r_peth_release = max(0, k_peth_release * (peth_bound - peth))
-    return r_peth - r_peth_bind + r_peth_release - r_peth_clear
-
-def _dpeth_bound_dt (k_peth_bind, peth_bound, k_peth_release, peth):
-    r_peth_bind = k_peth_bind * peth_bound
-    r_peth_release = max(0, k_peth_release * (peth_bound - peth))
-    return r_peth_bind - r_peth_release
-    
+    return R_emptying*conc_etoh_stomach - r3 - r4   
 
 
 def podeus_model(y, t, params, sex, weight, height, drinks, meals):
@@ -93,10 +67,30 @@ def podeus_model(y, t, params, sex, weight, height, drinks, meals):
     # blood concentrations 
     # ------- START OF OWN IMPLEMENTATION -------
     # You can implement the remaining equations here! 
-    dblood_conc_dt = 5
-    dplasma_acetate_dt = 0.0
-    dpeth_dt = 0.0
-    dpeth_bound_dt = 0.0
+
+    #defining blood concentration ODE
+    v_adh = vmax_adh * (blood_conc)/(km_adh + blood_conc)
+    v_cyp2e1 = vmax_cyp2e1 * (blood_conc)/(km_cyp2e1 + blood_conc)
+    a, b, c = 0.3669, 0.03219, 0.6041
+    v_blood = (a * height**3 + b * weight + c) * 10 #dl 
+    r3 = mass_etoh_intestine * k3
+    r5 = v_adh + v_cyp2e1
+    v_liver = 15.0 #dl
+    dblood_conc_dt = (r3/v_blood) - r5 * (v_liver/v_blood)
+
+    #defining ODE plasma
+    r6 = k6 * plasma_acetate
+    dplasma_acetate_dt = r5 - r6
+
+    #defining PEth ODE
+    r_peth = k_peth * blood_conc
+    r_peth_clear = k_peth_out * peth
+    r_peth_bind = k_peth_bind * peth_bound
+    r_peth_release = max(0, k_peth_release * (peth_bound - peth))
+    dpeth_dt = r_peth - r_peth_bind + r_peth_release - r_peth_clear
+
+    #defining PEth ODE bound
+    dpeth_bound_dt = r_peth_bind - r_peth_release
     # ------- END OF OWN IMPLEMENTATION -------
     return [dvol_stomach_dt, dkcal_liquid_dt, dkcal_solid_dt, detoh_pool_dt, 
             dconc_etoh_stomach_dt, dmass_etoh_intestine_dt, dblood_conc_dt, 
