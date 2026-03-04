@@ -35,6 +35,25 @@ def _dmass_etoh_intestine_dt(mass_etoh_intestine, conc_etoh_stomach, vol_stomach
     r4 = mass_etoh_intestine * k4
     return R_emptying*conc_etoh_stomach - r3 - r4
 
+def _dplasma_acetate_dt(v_adh, v_cyp2e1, k6, plasma_acetate):
+    r5 = v_adh + v_cyp2e1
+    r6 = k6 * plasma_acetate
+    return r5 - r6
+
+def _dpeth_dt(k_peth, blood_conc, k_peth_out, peth, k_peth_bind, peth_bound, k_peth_release):
+    r_peth = k_peth * blood_conc
+    r_peth_clear = k_peth_out * peth
+    r_peth_bind = k_peth_bind * peth_bound
+    r_peth_release = max(0, k_peth_release * (peth_bound - peth))
+    return r_peth - r_peth_bind + r_peth_release - r_peth_clear
+
+def _dpeth_bound_dt (k_peth_bind, peth_bound, k_peth_release, peth_bound, peth):
+    r_peth_bind = k_peth_bind * peth_bound
+    r_peth_release = max(0, k_peth_release * (peth_bound - peth))
+    return r_peth_bind - r_peth_release
+    
+
+
 def podeus_model(y, t, params, sex, weight, height, drinks, meals):
 
     # unpack variables
