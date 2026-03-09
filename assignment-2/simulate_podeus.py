@@ -72,6 +72,12 @@ for name, i in zip(param_names, indices):
         t_sim, 'female', 70.0, 1.75, drinks, meals, params=params_low
     )
     plt.plot(t_sim, out_low['promille'], linestyle='--', label=f'{name} -10%')
+    
+plt.xlabel('Time (min)')
+plt.ylabel('BAC (‰)')
+plt.title('Local sensitivity analysis of BAC')
+plt.legend()
+plt.show()
 
 for name, i in zip(param_names, indices):
     params_high = params_base.copy()
