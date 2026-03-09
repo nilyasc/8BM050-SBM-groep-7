@@ -4,7 +4,7 @@ from scipy.integrate import odeint
 import numpy as np
 
 
-def simulate_podeus(t, sex, weight, height, drinks, meals):
+def simulate_podeus(t, sex, weight, height, drinks, meals, params=None):
 
     # Initial conditions
     y0 = [0.001,  # vol_stomach
@@ -17,26 +17,27 @@ def simulate_podeus(t, sex, weight, height, drinks, meals):
           0.0,  # plasma_acetate
           0.0,  # peth
           0.0]  # peth_bound
-    
-    params = [
-        1.4599e4,  # k_peth
-        1.5695e2,  # k_peth_out
-        1.7416e4,  # k_peth_bind
-        5.8081e-3,  # k_peth_release
-        1.0155e1,  # k_pool_in
-        4.0227e-1,  # k_pool_out
-        2.1545e3,  # vmax
-        1.7793e4,  # km
-        1.5843e2,  # k_kcal
-        8.4172e1,  # k3
-        8.3001e2,  # k4
-        1.3079e-1,  # k6
-        9.6381e-1,  # vmax_adh
-        1.7148e-1,  # vmax_cyp2e1
-        9.2200e0,  # km_adh
-        3.6880e1,  # km_cyp2e1
-        6.1804e-3,  # k_kcal_clearance
-    ]
+
+    if params is None:    
+        params = [
+            1.4599e4,  # k_peth
+            1.5695e2,  # k_peth_out
+            1.7416e4,  # k_peth_bind
+            5.8081e-3,  # k_peth_release
+            1.0155e1,  # k_pool_in
+            4.0227e-1,  # k_pool_out
+            2.1545e3,  # vmax
+            1.7793e4,  # km
+            1.5843e2,  # k_kcal
+            8.4172e1,  # k3
+            8.3001e2,  # k4
+            1.3079e-1,  # k6
+            9.6381e-1,  # vmax_adh
+            1.7148e-1,  # vmax_cyp2e1
+            9.2200e0,  # km_adh
+            3.6880e1,  # km_cyp2e1
+            6.1804e-3,  # k_kcal_clearance
+        ]
 
     # find meal times
     if meals:
