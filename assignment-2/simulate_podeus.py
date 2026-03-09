@@ -73,6 +73,21 @@ for name, i in zip(param_names, indices):
     )
     plt.plot(t_sim, out_low['promille'], linestyle='--', label=f'{name} -10%')
 
+for name, i in zip(param_names, indices):
+    params_high = params_base.copy()
+    params_high[i] *= 1.3
+    _, out_high = podeus.simulate_podeus(
+        t_sim, 'female', 70.0, 1.75, drinks, meals, params=params_high
+    )
+    plt.plot(t_sim, out_high['promille'], label=f'{name} +30%')
+
+    params_low = params_base.copy()
+    params_low[i] *= 0.7
+    _, out_low = podeus.simulate_podeus(
+        t_sim, 'female', 70.0, 1.75, drinks, meals, params=params_low
+    )
+    plt.plot(t_sim, out_low['promille'], linestyle='--', label=f'{name} -30%')
+
 plt.xlabel('Time (min)')
 plt.ylabel('BAC (‰)')
 plt.title('Local sensitivity analysis of BAC')
