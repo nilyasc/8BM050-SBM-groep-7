@@ -2,55 +2,59 @@ import podeus
 import numpy as np
 import matplotlib.pyplot as plt
 
-# define drinks
-beer = podeus.Drink(volume_dl=5, kcal=120, alcohol_percentage=5, time_start_min=0, time_end_min=30)
-
-# (optional) define meals
-meal = podeus.Meal(kcal=500, time_start_min=0)  # meal at t=0, or set to later time if you want to simulate meal effects
-
-drinks = [beer]
-meals = [meal]  # or []
-
-# simulate
-t_sim = np.arange(0, 240, 0.1)  # simulate for 4 hours with 1000 time points
-solution, outputs = podeus.simulate_podeus(t_sim, sex='female', weight=70.0, height=1.75, drinks=drinks, meals=meals)
-solution_nomeal, outputs_nomeal = podeus.simulate_podeus(t_sim, sex='female', weight=70.0, height=1.75, drinks=drinks, meals=[])
-
-with_meal, = plt.plot(t_sim, outputs['promille'], color='red', alpha=0.5, label='With Meal')
-without_meal, = plt.plot(t_sim, outputs_nomeal['promille'], color='blue', alpha=0.5, label='Without Meal')
-beer_times = plt.vlines([beer.time_start_min, beer.time_end_min], ymin=0, ymax=0.25, colors='gray', linestyles='dashed', label='Drink Timing')
-beer_duration = plt.fill_betweenx([0, 0.25], beer.time_start_min, beer.time_end_min, color='gray', alpha=0.2, label='Drink Timing')
-plt.xlabel('Time (min)')
-plt.ylabel('BAC (‰)') 
-plt.legend([with_meal, without_meal, (beer_times, beer_duration)], ['With Meal', 'Without Meal', 'Drink Timing'])
-plt.show()
-
-params_base = [
-1.4599e4,
-1.5695e2,
-1.7416e4,
-5.8081e-3,
-1.0155e1,
-4.0227e-1,
-2.1545e3,
-1.7793e4,
-1.5843e2,
-8.4172e1,
-8.3001e2,
-1.3079e-1,
-9.6381e-1,
-1.7148e-1,
-9.2200e0,
-3.6880e1,
-6.1804e-3
-]
-
-plt.figure()
-
-#sensitivity analysis.
 sex = 'female'
 weight = 70.0
 height = 1.75
+
+# define drinks
+beer = podeus.Drink(volume_dl=5,kcal=120,alcohol_percentage=5,time_start_min=0,time_end_min=30)
+
+# define meal
+meal = podeus.Meal(kcal=500,time_start_min=0)
+
+drinks = [beer]
+meals = [meal]
+
+# simulate time
+t_sim = np.arange(0, 240, 0.1)
+
+
+solution, outputs = podeus.simulate_podeus(
+    t_sim, sex=sex, weight=weight, height=height, drinks=drinks, meals=meals)
+
+solution_nomeal, outputs_nomeal = podeus.simulate_podeus(t_sim, sex=sex, weight=weight, height=height, drinks=drinks, meals=[])
+
+plt.figure(figsize=(9, 5))
+with_meal, = plt.plot(t_sim, outputs['promille'], color='red', alpha=0.5, label='With Meal')
+without_meal, = plt.plot(t_sim, outputs_nomeal['promille'], color='blue', alpha=0.5, label='Without Meal')
+beer_times = plt.vlines([beer.time_start_min, beer.time_end_min],ymin=0, ymax=0.25,colors='gray', linestyles='dashed',label='Drink Timing')
+beer_duration = plt.fill_betweenx([0, 0.25],beer.time_start_min, beer.time_end_min,color='gray', alpha=0.2,label='Drink Timing')
+
+plt.xlabel('Time (min)')
+plt.ylabel('BAC (‰)')
+plt.title('Original model: with and without meal')
+plt.legend([with_meal, without_meal, (beer_times, beer_duration)],['With Meal', 'Without Meal', 'Drink Timing'])
+plt.show()
+
+params_base = [
+    1.4599e4,
+    1.5695e2,
+    1.7416e4,
+    5.8081e-3,
+    1.0155e1,
+    4.0227e-1,
+    2.1545e3,
+    1.7793e4,
+    1.5843e2,
+    8.4172e1,
+    8.3001e2,
+    1.3079e-1,
+    9.6381e-1,   # index 12 = vmax_adh
+    1.7148e-1,   # index 13 = vmax_cyp2e1
+    9.2200e0,
+    3.6880e1,
+    6.1804e-3
+]
 
 idx_adh = 12
 idx_cyp = 13
@@ -77,7 +81,10 @@ plt.xlabel('Time (min)')
 plt.ylabel('BAC (‰)')
 plt.title('BAC for CYP-ADH scenarios')
 plt.legend()
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
 plt.show()
+
 
 for cyp_factor, adh_factor in zip(cyp_factors, adh_factors):
 
