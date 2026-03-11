@@ -2,7 +2,25 @@ import podeus
 import numpy as np
 import matplotlib.pyplot as plt
 
+def make_liver_scenario(params, adh_factor=1.0, cyp_factor=1.0):
+    p = params.copy()
+    p[12] *= adh_factor   # vmax_adh
+    p[13] *= cyp_factor   # vmax_cyp2e1
+    return p
 
+
+def get_highest_stage_reached(bac):
+    peak = np.max(bac)
+
+    # stages gebaseerd op promille
+    if peak < 0.2:
+        return 1
+    elif peak < 0.5:
+        return 2
+    elif peak < 0.8:
+        return 3
+    else:
+        return 4
 
 # define drinks
 beer = podeus.Drink(volume_dl=5, kcal=120, alcohol_percentage=5, time_start_min=0, time_end_min=30)
@@ -15,8 +33,8 @@ meals = [meal]  # or []
 
 # simulate
 t_sim = np.arange(0, 240, 0.1)  # simulate for 4 hours with 1000 time points
-solution, outputs = podeus.simulate_podeus(t_sim, sex='female', weight=70.0, height=1.75, drinks=drinks, meals=meals)
-solution_nomeal, outputs_nomeal = podeus.simulate_podeus(t_sim, sex='female', weight=70.0, height=1.75, drinks=drinks, meals=[])
+solution, outputs = podeus.simulate_podeus(t_sim, sex='male', weight=70.0, height=1.75, drinks=drinks, meals=meals)
+solution_nomeal, outputs_nomeal = podeus.simulate_podeus(t_sim, sex='male', weight=70.0, height=1.75, drinks=drinks, meals=[])
 
 
 with_meal, = plt.plot(t_sim, outputs['promille'], color='red', alpha=0.5, label='With Meal')
@@ -51,7 +69,7 @@ params_base = [
 plt.figure()
 
 _, out_base = podeus.simulate_podeus(
-    t_sim, 'female', 70.0, 1.75, drinks, meals, params=params_base
+    t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_base
 )
 plt.plot(t_sim, out_base['promille'], label='baseline', linewidth=2)
 
@@ -62,17 +80,17 @@ for name, i in zip(param_names, indices):
     params_high = params_base.copy()
     params_high[i] *= 1.1
     _, out_high = podeus.simulate_podeus(
-        t_sim, 'female', 70.0, 1.75, drinks, meals, params=params_high
+        t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_high
     )
     plt.plot(t_sim, out_high['promille'], label=f'{name} +10%')
 
     params_low = params_base.copy()
     params_low[i] *= 0.9
     _, out_low = podeus.simulate_podeus(
-        t_sim, 'female', 70.0, 1.75, drinks, meals, params=params_low
+        t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_low
     )
     plt.plot(t_sim, out_low['promille'], linestyle='--', label=f'{name} -10%')
-    
+
 plt.xlabel('Time (min)')
 plt.ylabel('BAC (‰)')
 plt.title('Local sensitivity analysis of BAC')
@@ -83,14 +101,14 @@ for name, i in zip(param_names, indices):
     params_high = params_base.copy()
     params_high[i] *= 1.3
     _, out_high = podeus.simulate_podeus(
-        t_sim, 'female', 70.0, 1.75, drinks, meals, params=params_high
+        t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_high
     )
     plt.plot(t_sim, out_high['promille'], label=f'{name} +30%')
 
     params_low = params_base.copy()
     params_low[i] *= 0.7
     _, out_low = podeus.simulate_podeus(
-        t_sim, 'female', 70.0, 1.75, drinks, meals, params=params_low
+        t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_low
     )
     plt.plot(t_sim, out_low['promille'], linestyle='--', label=f'{name} -30%')
 
@@ -99,3 +117,79 @@ plt.ylabel('BAC (‰)')
 plt.title('Local sensitivity analysis of BAC')
 plt.legend()
 plt.show()
+
+# Onderzoeksvraag beantwoorden BMI stage berekenen
+bmi_values = [20, 25, 30, 35]
+height = 1.80
+weights = [bmi * height**2 for bmi in bmi_values]
+
+liver_scenarios = {
+    "Healthy liver": (1.0, 1.0),
+    "Mild impaired liver": (0.75, 0.75),
+    "Damaged liver": (0.50, 0.50)
+}
+
+# lege dictionary voor resultaten
+stage_table = {}
+
+for bmi, weight in zip(bmi_values, weights):
+    stage_table[bmi] = {}
+
+    for liver_name, (adh_factor, cyp_factor) in liver_scenarios.items():
+
+        params_new = make_liver_scenario(params_base, adh_factor, cyp_factor)
+
+        solution, outputs = podeus.simulate_podeus(
+            t_sim,
+            sex="male",
+            weight=weight,
+            height=height,
+            drinks=drinks,
+            meals=meals,
+            params=params_new
+        )
+
+        bac = outputs['promille']
+        stage = get_highest_stage_reached(bac)
+
+        stage_table[bmi][liver_name] = stage
+
+#Waardes in tabel zetten
+print("\nHighest stage reached table:\n")
+
+header = f"{'BMI':<8}{'Healthy liver':<20}{'Mild impaired liver':<24}{'Damaged liver':<20}"
+print(header)
+print("-" * len(header))
+
+for bmi in bmi_values:
+    healthy = stage_table[bmi]["Healthy liver"]
+    mild = stage_table[bmi]["Mild impaired liver"]
+    damaged = stage_table[bmi]["Damaged liver"]
+
+    row = f"{bmi:<8}{healthy:<20}{mild:<24}{damaged:<20}"
+    print(row)
+
+#BAC Curves plotten
+for liver_name, (adh_factor, cyp_factor) in liver_scenarios.items():
+    plt.figure()
+
+    for bmi, weight in zip(bmi_values, weights):
+        params_new = make_liver_scenario(params_base, adh_factor, cyp_factor)
+
+        solution, outputs = podeus.simulate_podeus(
+            t_sim,
+            sex="male",
+            weight=weight,
+            height=height,
+            drinks=drinks,
+            meals=meals,
+            params=params_new
+        )
+
+        plt.plot(t_sim, outputs['promille'], label=f'BMI {bmi}')
+
+    plt.xlabel('Time (min)')
+    plt.ylabel('BAC (‰)')
+    plt.title(f'BAC curves - {liver_name}')
+    plt.legend()
+    plt.show()
