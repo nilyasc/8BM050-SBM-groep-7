@@ -99,7 +99,7 @@ plt.show()
 
 
 # Onderzoeksvraag beantwoorden BMI stage berekenen
-bmi_values = [20, 25, 30, 35]
+bmi_values = [18.5, 23, 27, 32]
 height = 1.80
 weights = [bmi * height**2 for bmi in bmi_values]
 
