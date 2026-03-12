@@ -13,13 +13,15 @@ def get_highest_stage_reached(bac):
     peak = np.max(bac)
 
     # stages gebaseerd op promille
-    if peak < 0.2:
+    if 0 <= peak <=0.2:
         return 1
-    elif peak < 0.5:
+    elif 0.2<peak<=1.0:
         return 2
-    elif peak < 0.8:
+    elif 1.0<peak<= 2.0:
         return 3
-    else:
+    elif 2.0<peak<= 3.5:
+        return 4
+    else: 
         return 4
 
 # define drinks
