@@ -23,12 +23,12 @@ def get_highest_stage_reached(bac):
         return 4
 
 # define drinks
-three_beer = podeus.Drink(volume_dl=15, kcal=120, alcohol_percentage=5, time_start_min=0, time_end_min=60)
+beer = podeus.Drink(volume_dl=15, kcal=120, alcohol_percentage=5, time_start_min=0, time_end_min=60)
 
 # (optional) define meals
 meal = podeus.Meal(kcal=500, time_start_min=0)  # meal at t=0, or set to later time if you want to simulate meal effects
 
-drinks = [three_beer]
+drinks = [beer]
 meals = [meal]  # or []
 
 # simulate
