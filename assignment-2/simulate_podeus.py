@@ -23,7 +23,7 @@ def get_highest_stage_reached(bac):
         return 4
 
 # define drinks
-beer = podeus.Drink(volume_dl=15, kcal=360, alcohol_percentage=5, time_start_min=0, time_end_min=60)
+beer = podeus.Drink(volume_dl=10, kcal=240, alcohol_percentage=5, time_start_min=0, time_end_min=60)
 
 # (optional) define meals
 meal = podeus.Meal(kcal=500, time_start_min=0)  # meal at t=0, or set to later time if you want to simulate meal effects
@@ -126,7 +126,7 @@ weights = [bmi * height**2 for bmi in bmi_values]
 liver_scenarios = {
     "Healthy liver": (1.0, 1.0),
     "Mild impaired liver": (0.7071 , 2.0),
-    "Damaged liver": (3.25, 0.5547)
+    "Damaged liver": (0.5547, 3.25)
 }
 
 # lege dictionary voor resultaten
