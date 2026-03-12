@@ -42,7 +42,7 @@ without_meal, = plt.plot(t_sim, outputs_nomeal['promille'], color='blue', alpha=
 beer_times = plt.vlines([beer.time_start_min, beer.time_end_min], ymin=0, ymax=0.25, colors='gray', linestyles='dashed', label='Drink Timing')
 beer_duration = plt.fill_betweenx([0, 0.25], beer.time_start_min, beer.time_end_min, color='gray', alpha=0.2, label='Drink Timing')
 plt.xlabel('Time (min)')
-plt.ylabel('BAC (‰)') 
+plt.ylabel('BAC (%)') 
 plt.legend([with_meal, without_meal, (beer_times, beer_duration)], ['With Meal', 'Without Meal', 'Drink Timing'])
 plt.show()
 
@@ -92,7 +92,7 @@ for name, i in zip(param_names, indices):
     plt.plot(t_sim, out_low['promille'], linestyle='--', label=f'{name} -10%')
 
 plt.xlabel('Time (min)')
-plt.ylabel('BAC (‰)')
+plt.ylabel('BAC (%)')
 plt.title('Local sensitivity analysis of BAC')
 plt.legend()
 plt.show()
@@ -169,7 +169,7 @@ for liver_name, (adh_factor, cyp_factor) in liver_scenarios.items():
         plt.plot(t_sim, outputs['promille'], label=f'BMI {bmi}')
 
     plt.xlabel('Time (min)')
-    plt.ylabel('BAC (‰)')
+    plt.ylabel('BAC (%)')
     plt.title(f'BAC curves - {liver_name}')
     plt.legend()
     plt.show()
