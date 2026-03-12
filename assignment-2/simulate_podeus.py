@@ -8,6 +8,14 @@ def make_liver_scenario(params, adh_factor=1.0, cyp_factor=1.0):
     p[13] *= cyp_factor   # vmax_cyp2e1
     return p
 
+def get_full_recovery_time(t, bac, threshold=0.2):
+    peak_idx = np.argmax(bac)
+
+    for i in range(peak_idx, len(bac)):
+        if bac[i] < threshold:
+            return t[i] - t[peak_idx]   # recovery time vanaf piek
+
+    return np.nan   # niet hersteld binnen simulatietijd
 
 def get_highest_stage_reached(bac):
     peak = np.max(bac)
@@ -34,7 +42,7 @@ drinks = [beer]
 meals = [meal]  # or []
 
 # simulate
-t_sim = np.arange(0, 240, 0.1)  # simulate for 4 hours with 1000 time points
+t_sim = np.arange(0, 720, 0.1)  # simulate for 12 hours with 1000 time points
 solution, outputs = podeus.simulate_podeus(t_sim, sex='male', weight=70.0, height=1.75, drinks=drinks, meals=meals)
 solution_nomeal, outputs_nomeal = podeus.simulate_podeus(t_sim, sex='male', weight=70.0, height=1.75, drinks=drinks, meals=[])
 
@@ -132,10 +140,10 @@ liver_scenarios = {
 }
 
 # lege dictionary voor resultaten
-stage_table = {}
+recovery_table = {}
 
 for bmi, weight in zip(bmi_values, weights):
-    stage_table[bmi] = {}
+    recovery_table[bmi] = {}
 
     for liver_name, (adh_factor, cyp_factor) in liver_scenarios.items():
 
@@ -152,23 +160,23 @@ for bmi, weight in zip(bmi_values, weights):
         )
 
         bac = outputs['promille']
-        stage = get_highest_stage_reached(bac)
+        recovery_time = get_full_recovery_time(t_sim, bac)
 
-        stage_table[bmi][liver_name] = stage
+        recovery_table[bmi][liver_name] = recovery_time
 
 #Waardes in tabel zetten
-print("\nHighest stage reached table:\n")
+print("\nFull recovery time table (minutes):\n")
 
 header = f"{'BMI':<8}{'Healthy liver':<20}{'Mild impaired liver':<24}{'Damaged liver':<20}"
 print(header)
 print("-" * len(header))
 
 for bmi in bmi_values:
-    healthy = stage_table[bmi]["Healthy liver"]
-    mild = stage_table[bmi]["Mild impaired liver"]
-    damaged = stage_table[bmi]["Damaged liver"]
+    healthy = recovery_table[bmi]["Healthy liver"]
+    mild = recovery_table[bmi]["Mild impaired liver"]
+    damaged = recovery_table[bmi]["Damaged liver"]
 
-    row = f"{bmi:<8}{healthy:<20}{mild:<24}{damaged:<20}"
+    row = f"{bmi:<8}{healthy:<20.1f}{mild:<24.1f}{damaged:<20.1f}"
     print(row)
 
 #BAC Curves plotten
