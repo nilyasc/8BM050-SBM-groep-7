@@ -125,8 +125,8 @@ weights = [bmi * height**2 for bmi in bmi_values]
 
 liver_scenarios = {
     "Healthy liver": (1.0, 1.0),
-    "Mild impaired liver": (0.75, 0.75),
-    "Damaged liver": (0.50, 0.50)
+    "Mild impaired liver": (0.7071, 2.0),
+    "Damaged liver": (0.5547, 3.25)
 }
 
 # lege dictionary voor resultaten
