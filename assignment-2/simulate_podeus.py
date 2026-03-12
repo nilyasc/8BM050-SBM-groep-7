@@ -117,7 +117,7 @@ bmi_values = [18.5, 23, 27, 32]
 height = 1.80 
 weights = [bmi * height**2 for bmi in bmi_values]
 
-liver_scenarios = {"Healthy liver": (1.0, 1.0),"Mildly impaired liver": (0.7559 , 1.75),"Damaged liver": (0.6324, 2.75), "Extremely damaged liver": (0.5423, 3.4)}
+liver_scenarios = {"Healthy liver": (1.0, 1.0),"Mildly damaged liver": (0.7559 , 1.75),"Damaged liver": (0.6324, 2.75), "Extremely damaged liver": (0.5423, 3.4)}
 
 # lege dictionary voor resultaten
 recovery_table = {}
