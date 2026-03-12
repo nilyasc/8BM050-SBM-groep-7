@@ -23,12 +23,12 @@ def get_highest_stage_reached(bac):
         return 4
 
 # define drinks
-beer = podeus.Drink(volume_dl=5, kcal=120, alcohol_percentage=5, time_start_min=0, time_end_min=30)
+three_beer = podeus.Drink(volume_dl=15, kcal=120, alcohol_percentage=5, time_start_min=0, time_end_min=60)
 
 # (optional) define meals
 meal = podeus.Meal(kcal=500, time_start_min=0)  # meal at t=0, or set to later time if you want to simulate meal effects
 
-drinks = [beer]
+drinks = [three_beer]
 meals = [meal]  # or []
 
 # simulate
@@ -69,7 +69,7 @@ params_base = [
 plt.figure()
 
 _, out_base = podeus.simulate_podeus(
-    t_sim, 'male', 80.0, 1.80, drinks, meals, params=params_base
+    t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_base
 )
 plt.plot(t_sim, out_base['promille'], label='baseline', linewidth=2)
 
@@ -80,14 +80,14 @@ for name, i in zip(param_names, indices):
     params_high = params_base.copy()
     params_high[i] *= 1.1
     _, out_high = podeus.simulate_podeus(
-        t_sim, 'male', 80.0, 1.80, drinks, meals, params=params_high
+        t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_high
     )
     plt.plot(t_sim, out_high['promille'], label=f'{name} +10%')
 
     params_low = params_base.copy()
     params_low[i] *= 0.9
     _, out_low = podeus.simulate_podeus(
-        t_sim, 'male', 80.0, 1.80, drinks, meals, params=params_low
+        t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_low
     )
     plt.plot(t_sim, out_low['promille'], linestyle='--', label=f'{name} -10%')
 
@@ -97,16 +97,36 @@ plt.title('Local sensitivity analysis of BAC')
 plt.legend()
 plt.show()
 
+for name, i in zip(param_names, indices):
+    params_high = params_base.copy()
+    params_high[i] *= 1.3
+    _, out_high = podeus.simulate_podeus(
+        t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_high
+    )
+    plt.plot(t_sim, out_high['promille'], label=f'{name} +30%')
+
+    params_low = params_base.copy()
+    params_low[i] *= 0.7
+    _, out_low = podeus.simulate_podeus(
+        t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_low
+    )
+    plt.plot(t_sim, out_low['promille'], linestyle='--', label=f'{name} -30%')
+
+plt.xlabel('Time (min)')
+plt.ylabel('BAC (‰)')
+plt.title('Local sensitivity analysis of BAC')
+plt.legend()
+plt.show()
 
 # Onderzoeksvraag beantwoorden BMI stage berekenen
-bmi_values = [18.5, 23, 27, 32]
-height = 1.80
+bmi_values = [20, 25, 30, 35]
+height = 1.80 
 weights = [bmi * height**2 for bmi in bmi_values]
 
 liver_scenarios = {
     "Healthy liver": (1.0, 1.0),
-    "Mild impaired liver": (0.7071, 2.0),
-    "Damaged liver": (0.5547, 3.25)
+    "Mild impaired liver": (0.75, 0.75),
+    "Damaged liver": (0.50, 0.50)
 }
 
 # lege dictionary voor resultaten
