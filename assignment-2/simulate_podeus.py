@@ -17,20 +17,6 @@ def get_full_recovery_time(t, bac, threshold=0.2):
 
     return np.nan   # niet hersteld binnen simulatietijd
 
-def get_highest_stage_reached(bac):
-    peak = np.max(bac)
-
-    # stages gebaseerd op promille
-    if 0 <= peak <=0.2:
-        return 1
-    elif 0.2<peak<=1.0:
-        return 2
-    elif 1.0<peak<= 2.0:
-        return 3
-    elif 2.0<peak<= 3.5:
-        return 4
-    else: 
-        return 4
 
 # define drinks
 beer = podeus.Drink(volume_dl=10, kcal=240, alcohol_percentage=5, time_start_min=0, time_end_min=60)
@@ -110,9 +96,7 @@ plt.show()
 for name, i in zip(param_names, indices):
     params_high = params_base.copy()
     params_high[i] *= 1.3
-    _, out_high = podeus.simulate_podeus(
-        t_sim, 'male', 80.0, 1.80, drinks, meals, params=params_high
-    )
+    _, out_high = podeus.simulate_podeus( t_sim, 'male', 80.0, 1.80, drinks, meals, params=params_high)
     plt.plot(t_sim, out_high['promille'], label=f'{name} +30%')
 
     params_low = params_base.copy()
@@ -133,11 +117,7 @@ bmi_values = [18.5, 23, 27, 32]
 height = 1.80 
 weights = [bmi * height**2 for bmi in bmi_values]
 
-liver_scenarios = {
-    "Healthy liver": (1.0, 1.0),
-    "Mild impaired liver": (0.7071 , 2.0),
-    "Damaged liver": (0.5547, 3.25)
-}
+liver_scenarios = {"Healthy liver": (1.0, 1.0),"Mild impaired liver": (0.7071 , 2.0),"Damaged liver": (0.5547, 3.25)}
 
 # lege dictionary voor resultaten
 recovery_table = {}
@@ -149,15 +129,7 @@ for bmi, weight in zip(bmi_values, weights):
 
         params_new = make_liver_scenario(params_base, adh_factor, cyp_factor)
 
-        solution, outputs = podeus.simulate_podeus(
-            t_sim,
-            sex="male",
-            weight=weight,
-            height=height,
-            drinks=drinks,
-            meals=meals,
-            params=params_new
-        )
+        solution, outputs = podeus.simulate_podeus(t_sim,sex="male",weight=weight,height=height,drinks=drinks,meals=meals,params=params_new)
 
         bac = outputs['promille']
         recovery_time = get_full_recovery_time(t_sim, bac)
@@ -167,7 +139,7 @@ for bmi, weight in zip(bmi_values, weights):
 #Waardes in tabel zetten
 print("\nFull recovery time table (minutes):\n")
 
-header = f"{'BMI':<8}{'Healthy liver':<20}{'Mild impaired liver':<24}{'Damaged liver':<20}"
+header = f"{'BMI':<8}{'Healthy liver':<20}{'Mildly damaged liver':<24}{'Damaged liver':<20}{'Extremely damaged liver':<24}"
 print(header)
 print("-" * len(header))
 
@@ -186,15 +158,7 @@ for liver_name, (adh_factor, cyp_factor) in liver_scenarios.items():
     for bmi, weight in zip(bmi_values, weights):
         params_new = make_liver_scenario(params_base, adh_factor, cyp_factor)
 
-        solution, outputs = podeus.simulate_podeus(
-            t_sim,
-            sex="male",
-            weight=weight,
-            height=height,
-            drinks=drinks,
-            meals=meals,
-            params=params_new
-        )
+        solution, outputs = podeus.simulate_podeus(t_sim,sex="male",weight=weight,height=height,drinks=drinks,meals=meals,params=params_new)
 
         plt.plot(t_sim, outputs['promille'], label=f'BMI {bmi}')
 
