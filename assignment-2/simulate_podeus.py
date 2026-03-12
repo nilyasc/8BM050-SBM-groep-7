@@ -144,11 +144,12 @@ print(header)
 print("-" * len(header))
 
 for bmi in bmi_values:
-    healthy = recovery_table[bmi]["Healthy liver"]
-    mild = recovery_table[bmi]["Mild impaired liver"]
-    damaged = recovery_table[bmi]["Damaged liver"]
+    healthy_liver = recovery_table[bmi]["Healthy liver"]
+    mildly_damaged_liver = recovery_table[bmi]["Mildly damaged liver"]
+    damaged_liver = recovery_table[bmi]["Damaged liver"]
+    extremely_damaged_liver = recovery_table[bmi]["Extremely damaged liver"]
 
-    row = f"{bmi:<8}{healthy:<20.1f}{mild:<24.1f}{damaged:<20.1f}"
+    row = f"{bmi:<8}{healthy_liver:<20f}{mildly_damaged_liver:<24f}{damaged_liver:<20}{extremely_damaged_liver:<24}"
     print(row)
 
 #BAC Curves plotten
