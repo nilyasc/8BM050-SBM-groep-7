@@ -73,7 +73,7 @@ def podeus_model(y, t, params, sex, weight, height, drinks, meals):
     v_cyp2e1 = vmax_cyp2e1 * (blood_conc)/(km_cyp2e1 + blood_conc)
     a, b, c = 0.3669, 0.03219, 0.6041
     v_blood = (a * height**3 + b * weight + c) * 10 #dl 
-    r3 = mass_etoh_intestine * k3
+    r3 = mass_etoh_intestine * k3 
     r5 = v_adh + v_cyp2e1
     v_liver = 15.0 #dl
     dblood_conc_dt = (r3/v_blood) - r5 * (v_liver/v_blood)
@@ -94,4 +94,4 @@ def podeus_model(y, t, params, sex, weight, height, drinks, meals):
     # ------- END OF OWN IMPLEMENTATION -------
     return [dvol_stomach_dt, dkcal_liquid_dt, dkcal_solid_dt, detoh_pool_dt, 
             dconc_etoh_stomach_dt, dmass_etoh_intestine_dt, dblood_conc_dt, 
-            dplasma_acetate_dt, dpeth_dt, dpeth_bound_dt]
+            dplasma_acetate_dt, dpeth_dt, dpeth_bound_dt] 
