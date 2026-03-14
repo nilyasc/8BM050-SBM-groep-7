@@ -2,21 +2,6 @@ import podeus
 import numpy as np
 import matplotlib.pyplot as plt
 
-def make_liver_scenario(params, adh_factor=1.0, cyp_factor=1.0):
-    p = params.copy()
-    p[12] *= adh_factor   # vmax_adh
-    p[13] *= cyp_factor   # vmax_cyp2e1
-    return p
-
-def get_full_recovery_time(t, bac, threshold=0.2):
-    peak_idx = np.argmax(bac)
-
-    for i in range(peak_idx, len(bac)):
-        if bac[i] < threshold:
-            return t[i] - t[peak_idx]   # recovery time vanaf piek
-
-    return np.nan   # niet hersteld binnen simulatietijd
-
 
 # define drinks
 beer = podeus.Drink(volume_dl=10, kcal=240, alcohol_percentage=5, time_start_min=0, time_end_min=60)
@@ -64,48 +49,46 @@ params_base = [
 
 plt.figure()
 
-_, out_base = podeus.simulate_podeus(
-    t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_base
-)
-plt.plot(t_sim, out_base['promille'], label='baseline', linewidth=2)
+#
+def make_liver_scenario(params, adh_factor=1.0, cyp_factor=1.0):
+    p = params.copy()
+    p[12] *= adh_factor   # vmax_adh
+    p[13] *= cyp_factor   # vmax_cyp2e1
+    return p
+
+#
+def get_full_recovery_time(t, bac, threshold=0.2):
+    peak_index = np.argmax(bac)
+
+    for i in range(peak_index, len(bac)):
+        if bac[i] < threshold:
+            return t[i] - t[peak_index]   
+
+    return np.nan   
+
+#
+solution_base, outputs_base = podeus.simulate_podeus(
+    t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_base)
+plt.plot(t_sim, outputs_base['promille'], label='baseline')
 
 param_names = ["vmax_adh", "vmax_cyp2e1"]
 indices = [12, 13]
 
+#
 for name, i in zip(param_names, indices):
     params_high = params_base.copy()
     params_high[i] *= 1.1
-    _, out_high = podeus.simulate_podeus(
-        t_sim, 'male', 80.0, 1.80, drinks, meals, params=params_high
-    )
-    plt.plot(t_sim, out_high['promille'], label=f'{name} +10%')
+    solution_high, outputs_high = podeus.simulate_podeus(t_sim, 'male', 80.0, 1.80, drinks, meals, params=params_high)
+    plt.plot(t_sim, outputs_high['promille'], label=f'{name} +10%')
 
     params_low = params_base.copy()
     params_low[i] *= 0.9
-    _, out_low = podeus.simulate_podeus(
+    solution_low, out_low = podeus.simulate_podeus(
         t_sim, 'male', 80.0, 1.80, drinks, meals, params=params_low
     )
     plt.plot(t_sim, out_low['promille'], linestyle='--', label=f'{name} -10%')
 
-plt.xlabel('Time (min)')
-plt.ylabel('BAC (‰)')
-plt.title('Local sensitivity analysis of BAC')
-plt.legend()
-plt.show()
-
-for name, i in zip(param_names, indices):
-    params_high = params_base.copy()
-    params_high[i] *= 1.3
-    _, out_high = podeus.simulate_podeus( t_sim, 'male', 80.0, 1.80, drinks, meals, params=params_high)
-    plt.plot(t_sim, out_high['promille'], label=f'{name} +30%')
-
-    params_low = params_base.copy()
-    params_low[i] *= 0.7
-    _, out_low = podeus.simulate_podeus(
-        t_sim, 'male', 80.0, 1.80, drinks, meals, params=params_low
-    )
-    plt.plot(t_sim, out_low['promille'], linestyle='--', label=f'{name} -30%')
-
+#plot grafiek met de local sensitivity analysis van de ADH
 plt.xlabel('Time (min)')
 plt.ylabel('BAC (‰)')
 plt.title('Local sensitivity analysis of BAC')
@@ -115,8 +98,14 @@ plt.show()
 # Onderzoeksvraag beantwoorden BMI stage berekenen
 bmi_values = [18.5, 23, 27, 32]
 height = 1.80 
-weights = [bmi * height**2 for bmi in bmi_values]
+weights = []
 
+#kijken naar elke BMI
+for bmi in bmi_values:
+    weight = bmi* height**2
+    weights.append(weight)
+
+#Cyp en ADH waarden koppelen aan diverse stadia    
 liver_scenarios = {"Healthy liver": (1.0, 1.0),"Mildly damaged liver": (0.7559 , 1.75),"Damaged liver": (0.6324, 2.75), "Extremely damaged liver": (0.5423, 3.4)}
 
 # lege dictionary voor resultaten
@@ -126,14 +115,10 @@ for bmi, weight in zip(bmi_values, weights):
     recovery_table[bmi] = {}
 
     for liver_name, (adh_factor, cyp_factor) in liver_scenarios.items():
-
         params_new = make_liver_scenario(params_base, adh_factor, cyp_factor)
-
         solution, outputs = podeus.simulate_podeus(t_sim,sex="male",weight=weight,height=height,drinks=drinks,meals=meals,params=params_new)
-
         bac = outputs['promille']
         recovery_time = get_full_recovery_time(t_sim, bac)
-
         recovery_table[bmi][liver_name] = recovery_time
 
 #Waardes in tabel zetten
