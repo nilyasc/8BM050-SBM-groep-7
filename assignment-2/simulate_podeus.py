@@ -14,8 +14,8 @@ meals = [meal]
 
 # simulate
 t_sim = np.arange(0, 720, 0.1)  # for 720 minutes (12 hours) with small time steps
-solution, outputs = podeus.simulate_podeus(t_sim, sex='male', height=1.75, weight=70.0, drinks=drinks, meals=meals)
-solution_nomeal, outputs_nomeal = podeus.simulate_podeus(t_sim, sex='male', height=1.75, weight=70.0, drinks=drinks, meals=[])
+solution, outputs = podeus.simulate_podeus(t_sim, sex='male', height=1.80, weight=80.0, drinks=drinks, meals=meals)
+solution_nomeal, outputs_nomeal = podeus.simulate_podeus(t_sim, sex='male', height=1.80, weight=80.0, drinks=drinks, meals=[])
 
 
 with_meal, = plt.plot(t_sim, outputs['promille'], color='red', alpha=0.5, label='With Meal')
@@ -67,7 +67,7 @@ def get_full_recovery_time(t, bac, threshold=0.2):
     return np.nan   
 
 #plot baseline simulation with given parameters. 
-solution_base, outputs_base = podeus.simulate_podeus(t_sim, sex='male', height=1.75, weight=70.0, drinks=drinks, meals=meals, params=params_base)
+solution_base, outputs_base = podeus.simulate_podeus(t_sim, sex='male', height=1.80, weight=80.0, drinks=drinks, meals=meals, params=params_base)
 plt.plot(t_sim, outputs_base['promille'], label='baseline')
 
 param_names = ["vmax_adh", "vmax_cyp2e1"]
