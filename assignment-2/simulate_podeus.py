@@ -4,18 +4,18 @@ import matplotlib.pyplot as plt
 
 
 # define drinks
-beer = podeus.Drink(volume_dl=10, kcal=240, alcohol_percentage=5, time_start_min=0, time_end_min=60)
+beer = podeus.Drink(volume_dl=10, alcohol_percentage=5, kcal=240, time_start_min=0, time_end_min=60)
 
-# (optional) define meals
-meal = podeus.Meal(kcal=500, time_start_min=0)  # meal at t=0, or set to later time if you want to simulate meal effects
+# define meals
+meal = podeus.Meal(kcal=500, time_start_min=0)  # meal at t=0
 
 drinks = [beer]
-meals = [meal]  # or []
+meals = [meal]  
 
 # simulate
-t_sim = np.arange(0, 720, 0.1)  # simulate for 12 hours with 1000 time points
-solution, outputs = podeus.simulate_podeus(t_sim, sex='male', weight=70.0, height=1.75, drinks=drinks, meals=meals)
-solution_nomeal, outputs_nomeal = podeus.simulate_podeus(t_sim, sex='male', weight=70.0, height=1.75, drinks=drinks, meals=[])
+t_sim = np.arange(0, 720, 0.1)  # for 720 minutes (12 hours) with small time steps
+solution, outputs = podeus.simulate_podeus(t_sim, sex='male', height=1.75, weight=70.0, drinks=drinks, meals=meals)
+solution_nomeal, outputs_nomeal = podeus.simulate_podeus(t_sim, sex='male', height=1.75, weight=70.0, drinks=drinks, meals=[])
 
 
 with_meal, = plt.plot(t_sim, outputs['promille'], color='red', alpha=0.5, label='With Meal')
@@ -49,14 +49,14 @@ params_base = [
 
 plt.figure()
 
-#new parameter for the formation of new liver scenarios by adjusting he Vmax of ADH and CYP2E1
+# new parameter for the formation of new liver scenarios by adjusting the Vmax of ADH and CYP2E1
 def make_liver_scenario(params, adh_factor=1.0, cyp_factor=1.0):
     new_param= params.copy()
     new_param[12] *= adh_factor   # vmax_adh
     new_param[13] *= cyp_factor   # vmax_cyp2e1
     return new_param
 
-#calculate the time it takes for the BAC to drop below the threshold, after the BAC peak has been reached. 
+# calculate the time it takes for the BAC to drop below the threshold, after the BAC peak has been reached. 
 def get_full_recovery_time(t, bac, threshold=0.2):
     peak_index = np.argmax(bac)
 
@@ -67,23 +67,23 @@ def get_full_recovery_time(t, bac, threshold=0.2):
     return np.nan   
 
 #plot baseline simulation with given parameters. 
-solution_base, outputs_base = podeus.simulate_podeus(t_sim, 'male', 70.0, 1.75, drinks, meals, params=params_base)
+solution_base, outputs_base = podeus.simulate_podeus(t_sim, sex='male', height=1.75, weight=70.0, drinks=drinks, meals=meals, params=params_base)
 plt.plot(t_sim, outputs_base['promille'], label='baseline')
 
 param_names = ["vmax_adh", "vmax_cyp2e1"]
 indices = [12, 13]
 
-#Calculate the local sensitivity of ADH at 10%
+# calculate the local sensitivity of ADH at 10% (to confirm chosen factors)
 for name, i in zip(param_names, indices):
     params_high = params_base.copy()
     params_high[i] *= 1.1
-    solution_high, output_high = podeus.simulate_podeus(t_sim, 'male', 80.0, 1.80, drinks, meals, params=params_high)
-    plt.plot(t_sim, output_high['promille'], label=f'{name} +10%')
+    solution_high, output_high = podeus.simulate_podeus(t_sim, sex='male', height=1.80, weight=80.0, drinks=drinks, meals=meals, params=params_high)
+    plt.plot(t_sim, output_high['promille'], label=name + ' +10%')
 
     params_low = params_base.copy()
     params_low[i] *= 0.9
-    solution_low, output_low = podeus.simulate_podeus(t_sim, 'male', 80.0, 1.80, drinks, meals, params=params_low)
-    plt.plot(t_sim, output_low['promille'], linestyle='--', label=f'{name} -10%')
+    solution_low, output_low = podeus.simulate_podeus(t_sim, sex='male', height=1.80, weight=80.0, drinks=drinks, meals=meals, params=params_low)
+    plt.plot(t_sim, output_low['promille'], linestyle='--', label=name + ' -10%')
 
 #plot the local sensitivity analysis for ADH at 10%
 plt.xlabel('Time (min)')
@@ -102,7 +102,7 @@ for bmi in bmi_values:
     weight = bmi* height**2
     weights.append(weight)
 
-#Couple the CYP2E1 and ADH to differnt scenarios    
+# linking the CYP2E1 and ADH to different scenarios    
 liver_scenarios = {"Healthy liver": (1.0, 1.0),
                    "Mildly damaged liver": (0.7559 , 1.75),
                    "Damaged liver": (0.6324, 2.75), 
@@ -111,18 +111,18 @@ liver_scenarios = {"Healthy liver": (1.0, 1.0),
 # empty dictionary for our results
 recovery_table = {}
 
-#
+# calculating recovery time for each BMI and liver condition
 for bmi, weight in zip(bmi_values, weights):
     recovery_table[bmi] = {}
 
     for liver_name, (adh_factor, cyp_factor) in liver_scenarios.items():
         params_new = make_liver_scenario(params_base, adh_factor, cyp_factor)
-        solution, outputs = podeus.simulate_podeus(t_sim,sex="male",weight=weight,height=height,drinks=drinks,meals=meals,params=params_new)
+        solution, outputs = podeus.simulate_podeus(t_sim,sex="male", height=height, weight=weight, drinks=drinks, meals=meals, params=params_new)
         bac = outputs['promille']
         recovery_time = get_full_recovery_time(t_sim, bac)
         recovery_table[bmi][liver_name] = recovery_time
 
-#Add values to table.
+# add values to table.
 print("\nFull recovery time table (minutes):\n")
 
 header = f"{'BMI':<8}{'Healthy liver':<20}{'Mildly damaged liver':<24}{'Damaged liver':<20}{'Extremely damaged liver':<20}"
@@ -145,12 +145,12 @@ for liver_name, (adh_factor, cyp_factor) in liver_scenarios.items():
     for bmi, weight in zip(bmi_values, weights):
         params_new = make_liver_scenario(params_base, adh_factor, cyp_factor)
 
-        solution, outputs = podeus.simulate_podeus(t_sim,sex="male",weight=weight,height=height,drinks=drinks,meals=meals,params=params_new)
+        solution, outputs = podeus.simulate_podeus(t_sim, sex="male", height=height, weight=weight, drinks=drinks, meals=meals, params=params_new)
 
-        plt.plot(t_sim, outputs['promille'], label=f'BMI {bmi}')
+        plt.plot(t_sim, outputs['promille'], label='BMI ' + str(bmi))
 
     plt.xlabel('Time (min)')
     plt.ylabel('BAC (‰)')
-    plt.title(f'BAC curves - {liver_name}')
+    plt.title('BAC curves - ' + liver_name)
     plt.legend()
     plt.show()
